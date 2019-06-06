@@ -24,5 +24,14 @@ def get_events():
     ])
 
 
+@app.route("/events/<int:event_id>/tickets")
+def get_tickets(event_id):
+    return jsonify({
+        "VIP": 25,
+        "Regular": 32,
+        "Premium": 120
+    })
+
+
 if __name__ == "__main__":
     app.run()
