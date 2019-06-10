@@ -3,25 +3,16 @@ from datetime import datetime
 
 from flask import Flask, jsonify
 
+from database import db_session
+from models import Event
+
 app = Flask(__name__)
 
 
 @app.route("/events")
 def get_events():
-    return jsonify([
-        {
-            "name": "Woodstock Festival",
-            "start_time": datetime(1999, 7, 23, 12).isoformat(),
-            "end_time": datetime(1999, 7, 25, 12).isoformat(),
-            "ticket_types": ["VIP"],
-        },
-        {
-            "name": "Cirque du Soleil",
-            "start_time": datetime(2019, 10, 23, 20, 0).isoformat(),
-            "end_time": datetime(2019, 10, 23, 23, 0).isoformat(),
-            "ticket_types": ["VIP", "Regular", "Premium"],
-        },
-    ])
+    events = [event.to_dict() for event in Event.query.all()]
+    return jsonify(events)
 
 
 @app.route("/events/<int:event_id>/tickets")
