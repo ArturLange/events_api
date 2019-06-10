@@ -4,7 +4,7 @@ from datetime import datetime
 from flask import Flask, jsonify
 
 from database import db_session
-from models import Event
+from models import Event, Ticket, TicketType
 
 app = Flask(__name__)
 
@@ -17,17 +17,20 @@ def get_events():
 
 @app.route("/events/<int:event_id>/tickets")
 def get_tickets(event_id):
-    return jsonify({
-        "VIP": 25,
-        "Regular": 32,
-        "Premium": 120
-    })
+    ticket_types = db_session.query(
+        TicketType).filter_by(event_id=event_id).filter(TicketType.tickets.any()).all()
+    response = {
+        ticket_type.name: db_session.query(Ticket).filter_by(
+            ticket_type_id=ticket_type.id).count()
+        for ticket_type in ticket_types
+    }
+    return jsonify(response)
 
 
 @app.route("/events/<int:event_id>/reservations", methods=["POST"])
-def ticket_reservation():
+def ticket_reservation(event_id):
     return jsonify({
-        'token': 'ca78fd642f5f655a09b67c0b0f34612c'
+        'token': '8ba44193-cffa-4e32-a4e4-625a0dd72cd3'
     })
 
 

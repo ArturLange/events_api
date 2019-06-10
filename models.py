@@ -1,7 +1,22 @@
+from uuid import uuid4
+
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from database import Base
+
+
+class Ticket(Base):
+    __tablename__ = 'tickets'
+    id = Column(Integer, primary_key=True)
+    token = Column(UUID(as_uuid=True), unique=True, default=uuid4)
+
+    event_id = Column(Integer, ForeignKey('events.id'))
+    event = relationship("Event", back_populates="tickets")
+
+    ticket_type_id = Column(Integer, ForeignKey('ticket_types.id'))
+    ticket_type = relationship("TicketType", back_populates="tickets")
 
 
 class TicketType(Base):
@@ -11,6 +26,12 @@ class TicketType(Base):
 
     event_id = Column(Integer, ForeignKey('events.id'))
     event = relationship("Event", back_populates="ticket_types")
+
+    tickets = relationship(
+        "Ticket",
+        order_by=Ticket.id,
+        back_populates="ticket_type"
+    )
 
 
 class Event(Base):
@@ -23,6 +44,12 @@ class Event(Base):
     ticket_types = relationship(
         "TicketType",
         order_by=TicketType.id,
+        back_populates="event"
+    )
+
+    tickets = relationship(
+        "Ticket",
+        order_by=Ticket.id,
         back_populates="event"
     )
 
