@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import uuid4
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
@@ -5,6 +6,16 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from database import Base
+from utils import get_reservation_end_time
+
+
+class Reservation(Base):
+    __tablename__ = 'reservations'
+    id = Column(Integer, primary_key=True)
+    end_time = Column(DateTime, default=get_reservation_end_time)
+
+    ticket_id = Column(Integer, ForeignKey('tickets.id'))
+    ticket = relationship("Ticket", back_populates='reservations')
 
 
 class Ticket(Base):
@@ -17,6 +28,12 @@ class Ticket(Base):
 
     ticket_type_id = Column(Integer, ForeignKey('ticket_types.id'))
     ticket_type = relationship("TicketType", back_populates="tickets")
+
+    reservations = relationship(
+        "Reservation",
+        order_by=Reservation.end_time,
+        back_populates='ticket'
+    )
 
 
 class TicketType(Base):

@@ -1,12 +1,18 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+from sqlalchemy.orm.query import Query
 
 from database import db_session
-from models import Event, Ticket, TicketType
+from models import Event, Reservation, Ticket, TicketType
 
 app = Flask(__name__)
+
+
+def get_available_tickets(ticket_type_id: int) -> Query:
+    return db_session.query(Ticket).filter_by(
+        ticket_type_id=ticket_type_id).filter(~Ticket.reservations.any(Reservation.end_time > datetime.utcnow()))
 
 
 @app.route("/events")
@@ -20,8 +26,7 @@ def get_tickets(event_id):
     ticket_types = db_session.query(
         TicketType).filter_by(event_id=event_id).filter(TicketType.tickets.any()).all()
     response = {
-        ticket_type.name: db_session.query(Ticket).filter_by(
-            ticket_type_id=ticket_type.id).count()
+        ticket_type.name: get_available_tickets(ticket_type.id).count()
         for ticket_type in ticket_types
     }
     return jsonify(response)
@@ -29,8 +34,17 @@ def get_tickets(event_id):
 
 @app.route("/events/<int:event_id>/reservations", methods=["POST"])
 def ticket_reservation(event_id):
+    ticket_type_id = db_session.query(TicketType.id).filter_by(
+        event_id=event_id).filter_by(name=request.json['ticket_type']).first()[0]
+    ticket = get_available_tickets(ticket_type_id).first()
+    reservation = Reservation(
+        end_time=datetime.utcnow() + timedelta(minutes=15),
+        ticket=ticket
+    )
+    db_session.add(reservation)
+    db_session.commit()
     return jsonify({
-        'token': '8ba44193-cffa-4e32-a4e4-625a0dd72cd3'
+        'token': ticket.token
     })
 
 
