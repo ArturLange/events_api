@@ -1,32 +1,31 @@
 from datetime import datetime
 from uuid import uuid4
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from database import Base
+from database import db
 from utils import get_reservation_end_time
 
 
-class Reservation(Base):
+class Reservation(db.Model):
     __tablename__ = 'reservations'
-    id = Column(Integer, primary_key=True)
-    end_time = Column(DateTime, default=get_reservation_end_time)
+    id = db.Column(db.Integer, primary_key=True)
+    end_time = db.Column(db.DateTime, default=get_reservation_end_time)
 
-    ticket_id = Column(Integer, ForeignKey('tickets.id'))
+    ticket_id = db.Column(db.Integer, db.ForeignKey('tickets.id'))
     ticket = relationship("Ticket", back_populates='reservations')
 
 
-class Ticket(Base):
+class Ticket(db.Model):
     __tablename__ = 'tickets'
-    id = Column(Integer, primary_key=True)
-    token = Column(UUID(as_uuid=True), unique=True, default=uuid4)
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(UUID(as_uuid=True), unique=True, default=uuid4)
 
-    event_id = Column(Integer, ForeignKey('events.id'))
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
     event = relationship("Event", back_populates="tickets")
 
-    ticket_type_id = Column(Integer, ForeignKey('ticket_types.id'))
+    ticket_type_id = db.Column(db.Integer, db.ForeignKey('ticket_types.id'))
     ticket_type = relationship("TicketType", back_populates="tickets")
 
     reservations = relationship(
@@ -36,12 +35,12 @@ class Ticket(Base):
     )
 
 
-class TicketType(Base):
+class TicketType(db.Model):
     __tablename__ = 'ticket_types'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
 
-    event_id = Column(Integer, ForeignKey('events.id'))
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
     event = relationship("Event", back_populates="ticket_types")
 
     tickets = relationship(
@@ -51,12 +50,12 @@ class TicketType(Base):
     )
 
 
-class Event(Base):
+class Event(db.Model):
     __tablename__ = 'events'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    start_time = Column(DateTime)
-    end_time = Column(DateTime)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    start_time = db.Column(db.DateTime)
+    end_time = db.Column(db.DateTime)
 
     ticket_types = relationship(
         "TicketType",

@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from database import db_session, init_db
+from database import db
+from events_api_app import app
 from models import Event, Ticket, TicketType
 
 
@@ -59,11 +60,12 @@ def add_events():
         event2.tickets.append(ticket)
         vip.tickets.append(ticket)
 
-    db_session.add(event1)
-    db_session.add(event2)
-    db_session.commit()
+    db.session.add(event1)
+    db.session.add(event2)
+    db.session.commit()
 
 
 if __name__ == "__main__":
-    init_db()
-    add_events()
+    with app.app_context():
+        db.create_all()
+        add_events()
