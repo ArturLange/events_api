@@ -1,8 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from database import db
 from events_api_app import app
-from models import Event, Ticket, TicketType
+from models import Event, Reservation, Ticket, TicketType
 
 
 def add_events():
@@ -62,6 +62,14 @@ def add_events():
 
     db.session.add(event1)
     db.session.add(event2)
+
+    ticket = db.session.query(Ticket).filter_by(
+        ticket_type=vip).first()
+    reservation = Reservation(
+        end_time=datetime.utcnow() + timedelta(minutes=120),
+        ticket=ticket
+    )
+
     db.session.commit()
 
 

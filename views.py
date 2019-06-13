@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timedelta
-from exceptions import EventNotFound, NoTicketTypeFound
+from exceptions import EventNotFound, NoTicketsAvailable, NoTicketTypeFound
 
 from flask import Flask, Response, abort, jsonify, request
 from sqlalchemy.orm.query import Query
@@ -42,6 +42,8 @@ def ticket_reservation(event_id) -> Response:
     if not ticket_type_id:
         raise NoTicketTypeFound()
     ticket = get_available_tickets(ticket_type_id[0]).first()
+    if not ticket:
+        raise NoTicketsAvailable()
     reservation = Reservation(
         end_time=datetime.utcnow() + timedelta(minutes=15),
         ticket=ticket

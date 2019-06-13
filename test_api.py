@@ -2,10 +2,12 @@ import json
 import os
 import tempfile
 import unittest
+from datetime import datetime, timedelta
 
 from database import db
 from events_api_app import app
 from init_db import add_events
+from models import Reservation, Ticket, TicketType
 from settings import TEST_SQLALCHEMY_DATABASE_URI
 
 
@@ -88,6 +90,18 @@ class TestAPI(TestCase):
         response = self.client.post(
             '/events/1/reservations',
             json=({"ticket_type": "WeirdTicketType"})
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json, expected)
+
+    def test_ticket_reservation_all_tickets_reserved(self):
+        expected = {
+            'error': 'No tickets available'
+        }
+        response = self.client.post(
+            '/events/2/reservations',
+            json=({"ticket_type": "VIP"})
         )
 
         self.assertEqual(response.status_code, 404)
