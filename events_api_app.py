@@ -14,8 +14,7 @@ def create_app():
 
 
 app = create_app()
-
+add_routes(app)
 
 if __name__ == "__main__":
-    add_routes(app)
     app.run(debug=True)
