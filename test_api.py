@@ -38,6 +38,10 @@ class TestAPI(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, expected)
 
+    def test_get_tickets_info_not_found(self):
+        response = self.client.get('/events/11111/tickets')
+        self.assertEqual(response.status_code, 404)
+
 
 if __name__ == "__main__":
     unittest.main()

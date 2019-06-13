@@ -1,7 +1,9 @@
+import json
 from datetime import datetime, timedelta
 
-from flask import Flask, Response, jsonify, request
+from flask import Flask, Response, abort, jsonify, request
 from sqlalchemy.orm.query import Query
+from sqlalchemy.sql.expression import literal
 
 from database import db
 from models import Event, Reservation, Ticket, TicketType
@@ -18,6 +20,9 @@ def get_events() -> Response:
 
 
 def get_tickets(event_id) -> Response:
+    event_exists = db.session.query(Event).filter_by(id=event_id).count() > 0
+    if not event_exists:
+        return abort(404)
     ticket_types = db.session.query(
         TicketType).filter_by(event_id=event_id).filter(TicketType.tickets.any()).all()
     response = {
