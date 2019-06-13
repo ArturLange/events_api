@@ -20,12 +20,12 @@ def add_events():
     event1.ticket_types.append(premium)
     event1.ticket_types.append(regular)
 
-    for i in range(120):
+    for i in range(10):
         ticket = Ticket()
         event1.tickets.append(ticket)
         premium.tickets.append(ticket)
 
-    for i in range(250):
+    for i in range(5):
         ticket = Ticket()
         event1.tickets.append(ticket)
         regular.tickets.append(ticket)
@@ -45,17 +45,17 @@ def add_events():
     regular = TicketType(name='Regular')
     vip = TicketType(name='VIP')
 
-    for i in range(50):
+    for i in range(5):
         ticket = Ticket()
         event2.tickets.append(ticket)
         premium.tickets.append(ticket)
 
-    for i in range(120):
+    for i in range(2):
         ticket = Ticket()
         event2.tickets.append(ticket)
         regular.tickets.append(ticket)
 
-    for i in range(10):
+    for i in range(1):
         ticket = Ticket()
         event2.tickets.append(ticket)
         vip.tickets.append(ticket)

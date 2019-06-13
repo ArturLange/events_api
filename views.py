@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta
+from exceptions import EventNotFound, NoTicketTypeFound
 
 from flask import Flask, Response, abort, jsonify, request
 from sqlalchemy.orm.query import Query
@@ -22,7 +23,7 @@ def get_events() -> Response:
 def get_tickets(event_id) -> Response:
     event_exists = db.session.query(Event).filter_by(id=event_id).count() > 0
     if not event_exists:
-        return abort(404)
+        raise EventNotFound()
     ticket_types = db.session.query(
         TicketType).filter_by(event_id=event_id).filter(TicketType.tickets.any()).all()
     response = {
@@ -33,9 +34,14 @@ def get_tickets(event_id) -> Response:
 
 
 def ticket_reservation(event_id) -> Response:
+    event_exists = db.session.query(Event).filter_by(id=event_id).count() > 0
+    if not event_exists:
+        raise EventNotFound()
     ticket_type_id = db.session.query(TicketType.id).filter_by(
-        event_id=event_id).filter_by(name=request.json['ticket_type']).first()[0]
-    ticket = get_available_tickets(ticket_type_id).first()
+        event_id=event_id).filter_by(name=request.json['ticket_type']).first()
+    if not ticket_type_id:
+        raise NoTicketTypeFound()
+    ticket = get_available_tickets(ticket_type_id[0]).first()
     reservation = Reservation(
         end_time=datetime.utcnow() + timedelta(minutes=15),
         ticket=ticket

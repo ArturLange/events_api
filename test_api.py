@@ -1,3 +1,4 @@
+import json
 import os
 import tempfile
 import unittest
@@ -32,15 +33,65 @@ class TestAPI(TestCase):
     def test_get_tickets_info(self):
         response = self.client.get('/events/1/tickets')
         expected = {
-            "Premium": 120,
-            "Regular": 250
+            "Premium": 10,
+            "Regular": 5
         }
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, expected)
 
     def test_get_tickets_info_not_found(self):
+        expected = {
+            'error': 'Event not found'
+        }
         response = self.client.get('/events/11111/tickets')
         self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json, expected)
+
+    def test_ticket_reservation(self):
+        expected_before = {
+            "Premium": 10,
+            "Regular": 5
+        }
+        expected_after = {
+            "Premium": 9,
+            "Regular": 5
+        }
+        response = self.client.get('/events/1/tickets')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, expected_before)
+
+        self.client.post(
+            '/events/1/reservations',
+            json=({"ticket_type": "Premium"})
+        )
+
+        response = self.client.get('/events/1/tickets')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, expected_after)
+
+    def test_ticket_reservation_event_not_found(self):
+        expected = {
+            'error': 'Event not found'
+        }
+        response = self.client.post(
+            '/events/11111/reservations',
+            json=({"ticket_type": "Premium"})
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json, expected)
+
+    def test_ticket_reservation_invalid_ticket_type(self):
+        expected = {
+            'error': 'Event has no tickets of given type'
+        }
+        response = self.client.post(
+            '/events/1/reservations',
+            json=({"ticket_type": "WeirdTicketType"})
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json, expected)
 
 
 if __name__ == "__main__":
