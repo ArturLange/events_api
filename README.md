@@ -34,7 +34,11 @@ To set it up using Docker, just run `create_test_db.sh`
 
 To run tests simply run
 
-`python test_api.py`
+`pytest`
+
+To run tests with coverage, run
+
+`pytest --cov`
 
 ## Shortcomings
 
