@@ -37,13 +37,14 @@ def add_events():
         start_time=datetime(2019, 10, 23, 20, 0),
         end_time=datetime(2019, 10, 23, 23, 0),
     )
-    event2.ticket_types.append(TicketType(name='Premium'))
-    event2.ticket_types.append(TicketType(name='Regular'))
-    event2.ticket_types.append(TicketType(name='VIP'))
 
     premium = TicketType(name='Premium')
     regular = TicketType(name='Regular')
     vip = TicketType(name='VIP')
+
+    event2.ticket_types.append(premium)
+    event2.ticket_types.append(regular)
+    event2.ticket_types.append(vip)
 
     for i in range(5):
         ticket = Ticket()
@@ -75,5 +76,6 @@ def add_events():
 
 if __name__ == "__main__":
     with app.app_context():
+        db.drop_all()
         db.create_all()
         # add_events()

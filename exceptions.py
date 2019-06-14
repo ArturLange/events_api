@@ -43,3 +43,11 @@ class TicketNotFound(JSONException):
             error='Ticket not found',
             status_code=404
         )
+
+
+class EventIDNotGiven(JSONException):
+    def __init__(self):
+        return super().__init__(
+            error="'event_id' parameter not given",
+            status_code=400
+        )

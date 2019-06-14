@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timedelta
 from exceptions import (
+    EventIDNotGiven,
     EventNotFound,
     NoTicketsAvailable,
     NoTicketTypeFound,
@@ -105,7 +106,34 @@ def pay_for_reservation(event_id, reservation_token) -> Response:
 
 
 def get_stats() -> Response:
-    return jsonify({})
+    event_id = request.args.get('event_id')
+    ticket_type_name = request.args.get('ticket_type')
+    tickets = db.session.query(Ticket)
+    if event_id:
+        if ticket_type_name:
+            ticket_type = db.session.query(
+                TicketType).filter_by(event_id=event_id).filter_by(name=ticket_type_name).first()
+            tickets = tickets.filter_by(ticket_type=ticket_type)
+            response = {
+                'tickets_available': tickets.filter(~Ticket.reservations.any(Reservation.end_time > datetime.utcnow())).count(),
+                'tickets_all': tickets.count()
+            }
+        else:
+            ticket_types = db.session.query(
+                TicketType).filter_by(event_id=event_id).all()
+            response = {
+                ticket_type.name: {
+                    'tickets_available': tickets.filter_by(
+                        ticket_type=ticket_type).filter(~Ticket.reservations.any(Reservation.end_time > datetime.utcnow())).count(),
+                    'tickets_all': tickets.filter_by(
+                        ticket_type=ticket_type).count()
+                }
+                for ticket_type in ticket_types
+            }
+
+    else:
+        raise EventIDNotGiven()
+    return jsonify(response)
 
 
 routes = [
