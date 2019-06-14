@@ -8,6 +8,16 @@ from database import db
 from utils import get_reservation_end_time
 
 
+class Payment(db.Model):
+    __tablename__ = 'payments'
+    id = db.Column(db.Integer, primary_key=True)
+    start_time = db.Column(db.DateTime, default=datetime.utcnow())
+    completed = db.Column(db.Boolean, default=False)
+
+    reservation_id = db.Column(db.Integer, db.ForeignKey('reservations.id'))
+    reservation = relationship("Reservation", back_populates='payments')
+
+
 class Reservation(db.Model):
     __tablename__ = 'reservations'
     id = db.Column(db.Integer, primary_key=True)
@@ -15,6 +25,12 @@ class Reservation(db.Model):
 
     ticket_id = db.Column(db.Integer, db.ForeignKey('tickets.id'))
     ticket = relationship("Ticket", back_populates='reservations')
+
+    payments = relationship(
+        "Payment",
+        order_by=Payment.start_time,
+        back_populates='reservation'
+    )
 
 
 class Ticket(db.Model):

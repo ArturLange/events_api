@@ -35,3 +35,11 @@ class NoTicketsAvailable(JSONException):
             error='No tickets available',
             status_code=404
         )
+
+
+class TicketNotFound(JSONException):
+    def __init__(self):
+        return super().__init__(
+            error='Ticket not found',
+            status_code=404
+        )

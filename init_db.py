@@ -56,7 +56,7 @@ def add_events():
         regular.tickets.append(ticket)
 
     for i in range(1):
-        ticket = Ticket()
+        ticket = Ticket(token='35dd559e-43c1-414a-87e6-031d3fd70960')
         event2.tickets.append(ticket)
         vip.tickets.append(ticket)
 

@@ -1,13 +1,18 @@
 import json
 from datetime import datetime, timedelta
-from exceptions import EventNotFound, NoTicketsAvailable, NoTicketTypeFound
+from exceptions import (
+    EventNotFound,
+    NoTicketsAvailable,
+    NoTicketTypeFound,
+    TicketNotFound
+)
 
 from flask import Flask, Response, abort, jsonify, request
 from sqlalchemy.orm.query import Query
 from sqlalchemy.sql.expression import literal
 
 from database import db
-from models import Event, Reservation, Ticket, TicketType
+from models import Event, Payment, Reservation, Ticket, TicketType
 
 
 def get_available_tickets(ticket_type_id: int) -> Query:
@@ -56,16 +61,20 @@ def ticket_reservation(event_id) -> Response:
 
 
 def get_reservation(event_id, reservation_token) -> Response:
-    return jsonify({
-        "paid": False,
-        "event": {
-            "name": "Woodstock Festival",
-            "start_time": datetime(1999, 7, 23, 12).isoformat(),
-            "end_time": datetime(1999, 7, 25, 12).isoformat(),
-            "ticket_types": ["VIP"],
-        },
-        "ticket_type": "VIP"
-    })
+    ticket = db.session.query(Ticket).filter_by(
+        token=reservation_token).first()
+    if not ticket:
+        raise TicketNotFound()
+    reservation = db.session.query(Reservation).filter_by(
+        ticket=ticket).first()
+    is_paid = db.session.query(Payment).filter_by(
+        reservation=reservation).filter_by(completed=True).count() > 0
+    response = {
+        'paid': is_paid,
+        "event": ticket.event.to_dict(),
+        "ticket_type": ticket.ticket_type.name
+    }
+    return jsonify(response)
 
 
 def pay_for_reservation(event_id, reservation_token) -> Response:

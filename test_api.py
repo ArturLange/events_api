@@ -49,6 +49,8 @@ class TestAPI(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json, expected)
 
+
+class TestCreateReservations(TestCase):
     def test_ticket_reservation(self):
         expected_before = {
             "Premium": 10,
@@ -106,6 +108,15 @@ class TestAPI(TestCase):
 
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json, expected)
+
+
+class TestGetReservation(TestCase):
+    def test_get_reservation(self):
+        response = self.client.get(
+            "/events/2/reservations/35dd559e-43c1-414a-87e6-031d3fd70960")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json['paid'])
 
 
 if __name__ == "__main__":
