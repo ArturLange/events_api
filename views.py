@@ -13,6 +13,12 @@ from sqlalchemy.sql.expression import literal
 
 from database import db
 from models import Event, Payment, Reservation, Ticket, TicketType
+from payment_gateway import (
+    CardError,
+    CurrencyError,
+    PaymentError,
+    PaymentGateway
+)
 
 
 def get_available_tickets(ticket_type_id: int) -> Query:
@@ -78,15 +84,23 @@ def get_reservation(event_id, reservation_token) -> Response:
 
 
 def pay_for_reservation(event_id, reservation_token) -> Response:
+    payment_token = request.json['payment_token']
+    ticket = db.session.query(Ticket).filter_by(
+        token=reservation_token).first()
+    reservation = ticket.reservations[0]
+    payment = Payment(reservation=reservation)
+
+    try:
+        payment_result = PaymentGateway().charge(100, payment_token)
+        payment.completed = True
+    except (CardError, PaymentError, CurrencyError):
+        pass
+    db.session.add(payment)
+    db.session.commit()
     return jsonify({
-        "paid": True,
-        "event": {
-            "name": "Woodstock Festival",
-            "start_time": datetime(1999, 7, 23, 12).isoformat(),
-            "end_time": datetime(1999, 7, 25, 12).isoformat(),
-            "ticket_types": ["VIP"],
-        },
-        "ticket_type": "VIP"
+        "paid": payment.completed,
+        "event": ticket.event.to_dict(),
+        "ticket_type": ticket.ticket_type.name
     })
 
 

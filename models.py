@@ -11,7 +11,7 @@ from utils import get_reservation_end_time
 class Payment(db.Model):
     __tablename__ = 'payments'
     id = db.Column(db.Integer, primary_key=True)
-    start_time = db.Column(db.DateTime, default=datetime.utcnow())
+    start_time = db.Column(db.DateTime, default=datetime.utcnow)
     completed = db.Column(db.Boolean, default=False)
 
     reservation_id = db.Column(db.Integer, db.ForeignKey('reservations.id'))
@@ -28,7 +28,7 @@ class Reservation(db.Model):
 
     payments = relationship(
         "Payment",
-        order_by=Payment.start_time,
+        order_by=Payment.start_time.desc(),
         back_populates='reservation'
     )
 
